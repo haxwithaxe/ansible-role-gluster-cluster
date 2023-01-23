@@ -1,0 +1,16 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include haxwithaxe.gluster_cluster"
+      vars:
+        gluster_repo_version: 10
+        gluster_name: "docker-volumes"
+        gluster_brick: "/bricks/docker-volumes"
+        gluster_mount_point: "/mnt/docker-volumes"
+        gluster_force: yes
+        gluster_cluster_group: "production_swarm"
+        gluster_volume_group: "docker"
+      become: yes
+      include_role:
+        name: "haxwithaxe.gluster_cluster"

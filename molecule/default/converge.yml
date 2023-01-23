@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include haxwithaxe.gluster_cluster"
+      include_role:
+        name: "haxwithaxe.gluster_cluster"

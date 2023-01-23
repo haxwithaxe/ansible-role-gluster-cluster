@@ -1,0 +1,34 @@
+---
+
+- name: Create gluster brick directory
+  file:
+    path: "{{ item.brick }}"
+    state: directory
+    owner: "gluster"
+    group: "gluster"
+    mode: "0770"
+
+- name: Create gluster volume mount point
+  file:
+    path: "{{ item.mount_point }}"
+    state: directory
+    owner: "{{ item.volume_user }}"
+    group: "{{ item.volume_group }}"
+    mode: "{{ item.volume_mode }}"
+
+- name: Create gluster volume
+  gluster.gluster.gluster_volume:
+    state: present
+    name: "{{ item.name }}"
+    bricks: '{{ item.brick }}'
+    rebalance: yes
+    cluster: "{{ groups[gluster_cluster_group] }}"
+    force: "{{ gluster_force | default('no') }}"
+  run_once: yes
+
+- name: Mount gluster volume
+  mount:
+    path: '{{ item.mount_point }}'
+    src: "localhost:{{ item.name }}"
+    fstype: "glusterfs"
+    state: mounted
