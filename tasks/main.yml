@@ -1,7 +1,7 @@
 ---
 
 - name: Install glusterfs packages
-  tags: never
+  tags: gluster_install
   include_role:
     name: "geerlingguy.glusterfs"
   vars:
@@ -9,16 +9,19 @@
     glusterfs_gpg_key_version: "{{ gluster_repo_version }}"
 
 - name: Start gluster server
+  tags: gluster_service
   service:
     name: "glusterd.service"
     state: started
 
-- name: Create volumes
-  import_tasks:
-    - volume.yml
-  loop: glusterfs_volumes
-
 - name: Add peers
+  tags: gluster_peers
   gluster.gluster.gluster_peer:
     state: present
-    nodes: glusterfs_peers
+    nodes: "{{ gluster_peers | default(groups[gluster_cluster_group] | difference([inventory_hostname]) | list ) }}"
+  run_once: yes
+
+- name: Create volumes
+  tags: gluster_volumes
+  include_tasks: "tasks/volume.yml"
+  loop: "{{ gluster_volumes }}"

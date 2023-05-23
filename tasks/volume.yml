@@ -8,23 +8,60 @@
     group: "gluster"
     mode: "0770"
 
+- name: Check if gluster volume mount point exists
+  stat:
+    path: "{{ item.mount_point }}" 
+  register: _gluster_volume_mount_path
+
 - name: Create gluster volume mount point
   file:
     path: "{{ item.mount_point }}"
     state: directory
-    owner: "{{ item.volume_user }}"
-    group: "{{ item.volume_group }}"
-    mode: "{{ item.volume_mode }}"
+    owner: "{{ item.volume_user | default(gluster_volume_user) }}"
+    group: "{{ item.volume_group | default(gluster_volume_group) }}"
+    mode: "{{ item.volume_mode | default(gluster_volume_mode) }}"
+  when: not _gluster_volume_mount_path.stat.exists
 
-- name: Create gluster volume
+- set_fact:
+    volume_peers: "{{ item.peers | default(gluster_volume_peers | default(group[gluster_cluster_group])) }}"
+
+- name: "Create gluster volume (explicit item.replicas)"
   gluster.gluster.gluster_volume:
     state: present
     name: "{{ item.name }}"
-    bricks: '{{ item.brick }}'
-    rebalance: yes
-    cluster: "{{ groups[gluster_cluster_group] }}"
-    force: "{{ gluster_force | default('no') }}"
+    bricks: "{{ item.brick }}"
+    host: "{{ gluster_volume_host | default(invetory_hostname) }}"
+    rebalance: "{{ item.rebalance | default('no') }}"
+    replicas: "{{ item.replicas }}"
+    cluster: "{{ volume_peers }}"
+    force: "{{ gluster_volume_force or gluster_force }}"
   run_once: yes
+  when: item.replicas is defined and item.replicas != 'all'
+
+- name: "Create gluster volume (item.replicas is all)"
+  gluster.gluster.gluster_volume:
+    state: present
+    name: "{{ item.name }}"
+    bricks: "{{ item.brick }}"
+    host: "{{ gluster_volume_host | default(invetory_hostname) }}"
+    rebalance: "{{ item.rebalance | default('no') }}"
+    replicas: "{{ volume_peers | length }}"
+    cluster: "{{ volume_peers }}"
+    force: "{{ gluster_volume_force or gluster_force }}"
+  run_once: yes
+  when: item.replicas is defined and item.replicas == 'all'
+
+- name: "Create gluster volume (item.replicas undefined)"
+  gluster.gluster.gluster_volume:
+    state: present
+    name: "{{ item.name }}"
+    bricks: "{{ item.brick }}"
+    host: "{{ gluster_volume_host | default(invetory_hostname) }}"
+    rebalance: "{{ item.rebalance | default('no') }}"
+    cluster: "{{ volume_peers }}"
+    force: "{{ gluster_volume_force or gluster_force }}"
+  run_once: yes
+  when: item.replicas is not defined
 
 - name: Mount gluster volume
   mount:

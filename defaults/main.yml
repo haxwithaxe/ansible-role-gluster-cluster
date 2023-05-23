@@ -1,11 +1,9 @@
 ---
 
 gluster_repo_version: 10
-gluster_brick: "/bricks/brick1"
 gluster_force: "no"
 gluster_cluster_group: "all"
-gluster_mount_point: "/mnt/brick1"
-gluster_name: "brick1"
 gluster_volume_user: "root"
 gluster_volume_group: "root"
 gluster_volume_mode: "0770"
+gluster_volumes: []
