@@ -8,11 +8,27 @@
     glusterfs_ppa_version: "{{ gluster_repo_version }}"
     glusterfs_gpg_key_version: "{{ gluster_repo_version }}"
 
+- name: Enable management encryption
+  copy:
+    content: ''
+    dest: /var/lib/glusterd/secure-access
+  when: gluster_enable_tls_management
+  register: _enabled_tls_managemnet
+
+# If management encryption is enabled then the daemon needs to be restarted
+- name: Restart gluster server
+  tags: gluster_service
+  service:
+    name: "glusterd.service"
+    state: restarted
+  when: _enabled_tls_managemnet is defined and _enabled_tls_managemnet.changed
+
 - name: Start gluster server
   tags: gluster_service
   service:
     name: "glusterd.service"
     state: started
+  when: not _enabled_tls_managemnet is defined or not _enabled_tls_managemnet.changed
 
 - name: Add peers
   tags: gluster_peers
