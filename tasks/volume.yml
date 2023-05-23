@@ -22,7 +22,8 @@
     mode: "{{ item.volume_mode | default(gluster_volume_mode) }}"
   when: not _gluster_volume_mount_path.stat.exists
 
-- set_fact:
+- name: Set volume peers
+  set_fact:
     volume_peers: "{{ item.peers | default(gluster_volume_peers | default(group[gluster_cluster_group])) }}"
 
 - name: "Create gluster volume (explicit item.replicas)"
@@ -48,6 +49,7 @@
     replicas: "{{ volume_peers | length }}"
     cluster: "{{ volume_peers }}"
     force: "{{ gluster_volume_force or gluster_force }}"
+    options: "{{ item.options | default(gluster_volume_options) | community.general.dict }}"
   run_once: yes
   when: item.replicas is defined and item.replicas == 'all'
 
@@ -60,8 +62,13 @@
     rebalance: "{{ item.rebalance | default('no') }}"
     cluster: "{{ volume_peers }}"
     force: "{{ gluster_volume_force or gluster_force }}"
+    options: "{{ item.options | default(gluster_volume_options) | community.general.dict }}"
   run_once: yes
   when: item.replicas is not defined
+
+- name: Wait for the volume to start
+  pause:
+    seconds: 5
 
 - name: Mount gluster volume
   mount:
