@@ -34,12 +34,10 @@ Role Variables
     - replicas (int/str, optional):  Defaults to `undefined`. when: item.replicas is defined and item.replicas != 'all'
 - gluster_enable_tls_management (bool, optional): If true management TLS encryption is enabled. Defaults to `no`.
 
-
 Dependencies
 ------------
 
-None.
-
+- openssl: The `openssl` command is used if `gluster_enable_tls_management` is true.
 
 Example Playbook
 ----------------

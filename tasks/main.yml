@@ -15,6 +15,10 @@
   when: gluster_enable_tls_management
   register: _enabled_tls_managemnet
 
+- name: Generate TLS infrastructure
+  import_tasks: tls.yml
+  when: gluster_enable_tls_management
+
 # If management encryption is enabled then the daemon needs to be restarted
 - name: Restart gluster server
   tags: gluster_service

@@ -1,0 +1,32 @@
+---
+
+- name: Create key
+  become: yes
+  shell:
+    cmd: 'openssl genrsa -out glusterfs.key 2048'
+    chdir: /usr/lib/ssl
+    creates: /usr/lib/ssl/glusterfs.key
+
+- name: Create PEM
+  become: yes
+  shell:
+    cmd: 'openssl req -new -x509 -key glusterfs.key -subj "/CN={{ inventory_hostname }}" -out /usr/lib/ssl/glusterfs.pem'
+    chdir: /usr/lib/ssl
+    creates: /usr/lib/ssl/glusterfs.pem
+
+- name: Load all TLS PEMs
+  become: yes
+  shell:
+    cmd: 'cat /usr/lib/ssl/glusterfs.pem'
+  changed_when: no
+  register: _tls_pem
+
+- name: Create server CA
+  set_fact:
+    _tls_pems: "{{ (_tls_pems | default('')) + '\n' + hostvars[item]._tls_pem.stdout }}"
+  loop: "{{ groups[gluster_cluster_group] }}"
+
+- name: Write server CA
+  copy:
+    content: "{{ _tls_pems }}"
+    dest: /usr/lib/ssl/glusterfs.ca
