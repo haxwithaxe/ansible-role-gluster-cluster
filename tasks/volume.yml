@@ -17,9 +17,9 @@
   file:
     path: "{{ item.mount_point }}"
     state: directory
-    owner: "{{ item.volume_user | default(gluster_volume_user) }}"
-    group: "{{ item.volume_group | default(gluster_volume_group) }}"
-    mode: "{{ item.volume_mode | default(gluster_volume_mode) }}"
+    owner: "{{ item.mount_user | default(gluster_mount_user) }}"
+    group: "{{ item.mount_group | default(gluster_mount_group) }}"
+    mode: "{{ item.mount_mode | default(gluster_mount_mode) }}"
   when: not _gluster_volume_mount_path.stat.exists
 
 - name: Set volume peers
@@ -36,6 +36,7 @@
     replicas: "{{ item.replicas }}"
     cluster: "{{ volume_peers }}"
     force: "{{ gluster_volume_force or gluster_force }}"
+    options: "{{ item.options | default(gluster_volume_options) | community.general.dict }}"
   run_once: yes
   when: item.replicas is defined and item.replicas != 'all'
 
