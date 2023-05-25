@@ -4,8 +4,8 @@ gluster_repo_version: 10
 gluster_force: "no"
 gluster_cluster_group: "all"
 gluster_enable_tls_management: no
-gluster_volume_user: "root"
-gluster_volume_group: "root"
-gluster_volume_mode: "0770"
+gluster_mount_user: "root"
+gluster_mount_group: "root"
+gluster_mount_mode: "0770"
 gluster_volumes: []
 gluster_volume_options: {}
