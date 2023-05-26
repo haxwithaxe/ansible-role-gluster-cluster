@@ -1,13 +1,12 @@
 Role Name
 =========
 
-Install glusterfs and configure a volume.
+Install and configure glusterfs servers and configure volumes. This can also setup TLS for the management channels. That includes generating TLS certs and CA for the servers in the cluster.
 
 Requirements
 ------------
 
-geerlingguy.glusterfs
-
+- geerlingguy.glusterfs
 
 Role Variables
 --------------
@@ -53,14 +52,14 @@ Example Playbook
         gluster_force: yes
         gluster_cluster_group: "production_swarm"
         gluster_volume_group: "docker"
+        gluster_enable_tls_management: yes
         gluster_volumes:
-          - name: example
-            brick: /bricks/example
-            mountpoint: /mnt/example
+          - name: swarm
+            brick: /bricks/swarm
+            mountpoint: /mnt/swarm
             options:
               server.ssl: !!str on
               client.ssl: !!str on
-
 ```
 
 License
