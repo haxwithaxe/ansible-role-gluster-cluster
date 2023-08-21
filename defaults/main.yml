@@ -1,8 +1,11 @@
 ---
 
+gluster_certs_remove: no
 gluster_repo_version: 10
 gluster_force: "no"
+gluster_certs_min_expire_time: "+10d"
 gluster_cluster_group: "all"
+gluster_peer_group: "all"
 gluster_enable_tls_management: no
 gluster_mount_user: "root"
 gluster_mount_group: "root"

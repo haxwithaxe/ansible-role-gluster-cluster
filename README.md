@@ -13,6 +13,7 @@ Role Variables
 
 - gluster_repo_version: The glusterfs repo version to pass to `geerlingguy.glusterfs`. Defaults to `10`.
 - gluster_force: If true set `force: yes` for `gluster.gluster.gluster_volume`. Defaults to `no`.
+- gluster_certs_min_expire_time: The amount of time before the TLS cert expires that triggers this to regenerate the cert. Defaults to `+10d` or 10 days from now.
 - gluster_cluster_group: The group of hosts in the cluster. Defaults to "all".
 - gluster_mount_user (str): Default/global volume directory user. Defaults to `root`.
 - gluster_mount_group (str): Default/global volume directory group. Defaults to `root`.

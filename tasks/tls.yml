@@ -1,6 +1,46 @@
 ---
 
+- name: Check for certificate file
+  stat:
+    path: /usr/lib/ssl/glusterfs.pem
+  register: _cert_pem_file
+
+- name: Check expiration date
+  community.crypto.x509_certificate_info:
+    path: /usr/lib/ssl/glusterfs.pem
+    valid_at:
+      minimum: "{{ gluster_certs_min_expire_time }}"
+  when: _cert_pem_file.stat.exists
+  register: _expire_check
+  changed_when: no
+
+- name: Remove old certs
+  tags: gluster_certs
+  block:
+  - name: Remove key
+    tags: gluster_certs
+    become: yes
+    file:
+      path: /usr/lib/ssl/glusterfs.key
+      state: absent
+
+  - name: Remove PEM
+    tags: gluster_certs
+    become: yes
+    file:
+      path: /usr/lib/ssl/glusterfs.pem
+      state: absent
+
+  - name: Remove server CA
+    tags: gluster_certs
+    become: yes
+    file:
+      path: /usr/lib/ssl/glusterfs.ca
+      state: absent
+  when: gluster_certs_remove or ( _cert_pem_file.stat.exists and not _expire_check.valid_at.minimum )
+
 - name: Create key
+  tags: gluster_certs
   become: yes
   shell:
     cmd: 'openssl genrsa -out glusterfs.key 2048'
@@ -8,6 +48,7 @@
     creates: /usr/lib/ssl/glusterfs.key
 
 - name: Create PEM
+  tags: gluster_certs
   become: yes
   shell:
     cmd: 'openssl req -new -x509 -key glusterfs.key -subj "/CN={{ inventory_hostname }}" -out /usr/lib/ssl/glusterfs.pem'
@@ -15,6 +56,7 @@
     creates: /usr/lib/ssl/glusterfs.pem
 
 - name: Load all TLS PEMs
+  tags: gluster_certs
   become: yes
   shell:
     cmd: 'cat /usr/lib/ssl/glusterfs.pem'
@@ -22,11 +64,13 @@
   register: _tls_pem
 
 - name: Create server CA
+  tags: gluster_certs
   set_fact:
     _tls_pems: "{{ (_tls_pems | default('')) + '\n' + hostvars[item]._tls_pem.stdout }}"
   loop: "{{ groups[gluster_cluster_group] }}"
 
 - name: Write server CA
+  tags: gluster_certs
   copy:
     content: "{{ _tls_pems }}"
     dest: /usr/lib/ssl/glusterfs.ca
