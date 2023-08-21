@@ -16,6 +16,7 @@
   register: _enabled_tls_managemnet
 
 - name: Generate TLS infrastructure
+  tags: gluster_certs
   import_tasks: tls.yml
   when: gluster_enable_tls_management
 
@@ -38,10 +39,11 @@
   tags: gluster_peers
   gluster.gluster.gluster_peer:
     state: present
-    nodes: "{{ gluster_peers | default(groups[gluster_cluster_group] | difference([inventory_hostname]) | list ) }}"
+    nodes: "{{ gluster_peers | default(groups[gluster_peer_group] | difference([inventory_hostname]) | list ) }}"
   run_once: yes
 
 - name: Create volumes
   tags: gluster_volumes
   include_tasks: "tasks/volume.yml"
   loop: "{{ gluster_volumes }}"
+  when: inventory_hostname in groups[gluster_cluster_group]
