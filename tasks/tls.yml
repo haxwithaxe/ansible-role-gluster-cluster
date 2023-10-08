@@ -5,6 +5,11 @@
     path: /usr/lib/ssl/glusterfs.pem
   register: _cert_pem_file
 
+- name: Install required python packages
+  package:
+    name:
+      - python3-cryptography
+
 - name: Check expiration date
   community.crypto.x509_certificate_info:
     path: /usr/lib/ssl/glusterfs.pem
